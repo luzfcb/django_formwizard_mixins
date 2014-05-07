@@ -1,6 +1,7 @@
 from django import forms
 from collections import OrderedDict
-from ..forms.base import BaseConfirmationForm
+from django.core.exceptions import ImproperlyConfigured
+from ..forms.base import BaseConfirmationForm, AllPreviousFormsConfirmationForm
 
 class WizardDynamicFormClassMixin(object):
     def get_form_class(self, step):
@@ -95,3 +96,28 @@ class WizardConfirmationMixin(WizardDynamicFormClassMixin):
                     return self.render_revalidation_failure(form_key, form_obj, **kwargs)
         
         return super(WizardConfirmationMixin, self).render(form=form, **kwargs)
+
+
+class WizardConfirmAllAtFinalStepMixin(WizardConfirmationMixin):
+    """
+    This wizard mixin work the same way of WizardConfirmationMixin,
+    but add additional confirmation on final step for all Fields from all
+    previous normal django Forms. The final Confirmation step not include any
+    other previous Confirmation Step.
+    """
+    confirmation_step_url_name = None
+
+    def __init__(self, **kwargs):
+        super(WizardConfirmAllAtFinalStepMixin, self).__init__(**kwargs)
+        form_list = self.form_list
+        if form_list and not form_list.get(self.get_confirmation_step_url_name(), None):
+            form_list["%s" % self.get_confirmation_step_url_name()] = AllPreviousFormsConfirmationForm
+
+    def get_confirmation_step_url_name(self):
+        # Return the confirmation_step_name name.
+        if self.confirmation_step_url_name is None:
+            raise ImproperlyConfigured(
+                '{0} is missing a confirmation_step_name variable.'
+                'Define {0}.confirmation_step_name or override '
+                '{0}.get_confirmation_step_url_name().'.format(self.__class__.__name__))
+        return self.confirmation_step_url_name

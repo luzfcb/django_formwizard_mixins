@@ -5,6 +5,8 @@
         {% block head %}{% endblock %}
     </head>
     <body>
+         <a href="{% url "home-wizard-demo"%}"> Home</a>
+         <br/>
         {% if messages %}
             <ul>
                 {% for message in messages %}
@@ -12,6 +14,11 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        {% block content %}{% endblock %}
+        {% block content %}
+            <br/>
+            <a href="{% url "demo-wizard-done" %}"> WizardConfirmationMixin Test</a>
+            <br/>
+            <a href="{% url "demo-wizard-confirm-all-done" %}"> WizardConfirmAllAtFinalStepMixin Test</a>
+        {% endblock %}
     </body>
 </html>
